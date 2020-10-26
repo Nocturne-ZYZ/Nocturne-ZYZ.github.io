@@ -1,0 +1,426 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Nocturne-ZYZ的个人博客</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="../assets/css/main.css" />
+</head>
+<body class="is-preload">
+
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Main -->
+    <div id="main">
+        <div class="inner">
+
+            <!-- Header -->
+            <header id="header">
+                <a href="../index.html" class="logo"><strong>Editorial</strong> by Nocturne-ZYZ</a>
+            </header>
+
+            <!-- Content -->
+            <section>
+                <h1>中缀表达式转后缀表达式并进行计算</h1>
+                <hr />
+                <p>&nbsp;</p>
+                <h2>中缀表达式转后缀表达式</h2>
+                <p>	首先需要分配2个栈，一个作为临时存储运算符的栈S1（含一个结束符号），一个作为存放结果（逆波兰式）的栈S2（空栈），S1栈可先放入优先级最低的运算符#，中缀式应以此最低优先级的运算符结束。可指定其他字符，不一定非#不可。从中缀式的左端开始取字符，逐序进行如下步骤：</p>
+                <p>	（1）若取出的字符是操作数，则分析出完整的运算数，该操作数直接送入S2栈。</p>
+                <blockquote><p>分析出完整运算数的方法：</p>
+                    <p>String buffer</p>
+                    <p>if 是数字  插入buffer</p>
+                    <p>if 是&#39;.&#39;  插入buffer</p>
+                    <p>所有负数要求两边加括号：(-5)</p>
+                    <p>if 是左括号，看是否紧跟符号，紧跟则负号插入buffer，后面数字按上述插入直到遇见右括号。</p>
+                    <p>然后进行字符串转浮点数</p>
+                </blockquote>
+                <p>	（2）若取出的字符是运算符，则将该运算符与S1栈栈顶元素比较，如果该运算符(不包括括号运算符)优先级高于S1栈栈顶运算符（包括左括号）优先级，则将该运算符进S1栈，否则，将S1栈的栈顶运算符弹出，送入S2栈中，直至S1栈栈顶运算符（包括左括号）低于（不包括等于）该运算符优先级时停止弹出运算符，最后将该运算符送入S1栈。</p>
+                <p>	（3）若取出的字符是“（”，则直接送入S1栈顶。</p>
+                <p>	（4）若取出的字符是“）”，则将距离S1栈栈顶最近的“（”之间的运算符，逐个出栈，依次送入S2栈，此时抛弃“（”。</p>
+                <p>	（5）重复上面的1~4步，直至处理完所有的输入字符。</p>
+                <p>	（6）若取出的字符是“#”，则将S1栈内所有运算符（不包括“#”），逐个出栈，依次送入S2栈。</p>
+                <p>	完成以上步骤，将S2栈逆序处理便为逆波兰式输出结果。</p>
+                <h2>后缀表达式计算</h2>
+                <p>	新建一个栈，如果当前字符为变量或者为数字，则压栈，如果是运算符，则将栈顶两个元素弹出作相应运算，结果再入栈，最后当表达式扫描完后，栈里的就是结果。</p>
+                <hr />
+                <p>main.cpp</p>
+                <pre><code class='language-c++' lang='c++'>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;cstdlib&gt;
+#include &lt;cmath&gt;
+#include &quot;zstack.h&quot;
+#define EPS 0.0000001
+using namespace std;
+
+union Elemt
+{
+	char op;
+	double number;
+};
+
+//函数功能：中缀表达式转后缀表达式
+//函数参数：用户输入的中缀表达式
+//函数返回值：存有转换后后缀表达式的栈
+zstack&lt;Elemt&gt; trans(string s)
+{
+	zstack&lt;char&gt; s1;//存储运算符
+	zstack&lt;Elemt&gt; s2;//存储后缀表达式
+	zstack&lt;Elemt&gt; s3;//存储s2逆置结果（s2中的结果是正确后缀表达式的逆序）
+	zstack&lt;Elemt&gt; s4;//存储函数返回值
+	Elemt temp;
+	string buffer;
+	s1.Push(&#39;#&#39;);
+	for (unsigned int i = 0; i &lt; s.length(); i++)
+	{
+		if (s[i] == &#39;(&#39;)
+		{
+			if (s[i + 1] == &#39;-&#39;)
+			{
+				i++;
+				buffer.clear();
+				while (s[i] != &#39;)&#39;)
+				{
+					buffer.push_back(s[i]);
+					i++;
+				}
+				temp.number = atof(buffer.c_str());
+				temp.op = &#39;\0&#39;;
+				s2.Push(temp);
+			}
+			else
+			{
+				s1.Push(s[i]);
+			}
+		}
+		else if (s[i] &lt;= &#39;9&#39; &amp;&amp; s[i] &gt;= &#39;0&#39;)
+		{
+			buffer.clear();
+			while ((s[i] &lt;= &#39;9&#39; &amp;&amp; s[i] &gt;= &#39;0&#39;) || s[i] == &#39;.&#39;)
+			{
+				buffer.push_back(s[i]);
+				i++;
+			}
+			i--;
+			temp.number = atof(buffer.c_str());
+			temp.op = &#39;\0&#39;;
+			s2.Push(temp);
+		}
+		else if (s[i] == &#39;)&#39;)
+		{
+			while (s1.Top() != &#39;(&#39;)
+			{
+				temp.op = s1.Top();
+				s2.Push(temp);
+				s1.Pop();
+			}
+			s1.Pop();
+		}
+		else if (s[i] == &#39;+&#39; || s[i] == &#39;-&#39;)
+		{
+			while (!s1.Empty() &amp;&amp; s1.Top() != &#39;(&#39; &amp;&amp; s1.Top() != &#39;#&#39;)
+			{
+				temp.op = s1.Top();
+				s2.Push(temp);
+				s1.Pop();
+			}
+			s1.Push(s[i]);
+		}
+		else if (s[i] == &#39;*&#39; || s[i] == &#39;/&#39; || s[i] == &#39;%&#39;)
+		{
+			while (s1.Top() == &#39;*&#39; || s1.Top() == &#39;/&#39; || s1.Top() == &#39;%&#39;)
+			{
+				temp.op = s1.Top();
+				s2.Push(temp);
+				s1.Pop();
+			}
+			s1.Push(s[i]);
+		}
+		else if (s[i] == &#39;#&#39;)
+		{
+			while (s1.Top() != &#39;#&#39;)
+			{
+				temp.op = s1.Top();
+				s2.Push(temp);
+				s1.Pop();
+			}
+		}
+	}
+	while (!s2.Empty())
+	{
+		s3.Push(s2.Top());
+		s4.Push(s2.Top());
+		s2.Pop();
+	}
+	cout &lt;&lt; &quot;后缀表达式为：&quot;;
+	while (!s3.Empty())
+	{
+		if (s3.Top().op == &#39;\0&#39;)
+		{
+			cout &lt;&lt; s3.Top().number &lt;&lt; &quot; &quot;;
+		}
+		else
+		{
+			cout &lt;&lt; s3.Top().op &lt;&lt; &quot; &quot;;
+		}
+		s3.Pop();
+	}
+	return s4;
+}
+
+//函数功能：对存储在栈中的后缀表达式进行计算
+//函数参数：存有转换后后缀表达式的栈
+//函数返回值：无
+void calculation(zstack&lt;Elemt&gt; s4)
+{
+	zstack&lt;Elemt&gt; s0;
+	Elemt temp;
+	int tempint;
+	while (s4.Size() &gt;= 1)
+	{
+		if (s4.Top().op == &#39;\0&#39;)
+		{
+			s0.Push(s4.Top());
+		}
+		else
+		{
+			switch (s4.Top().op)
+			{
+			case &#39;+&#39;:
+				temp.number = s0.Top().number;
+				s0.Pop();
+				temp.number += s0.Top().number;
+				s0.Pop();
+				temp.op = &#39;\0&#39;;
+				s0.Push(temp);
+				break;
+			case &#39;-&#39;:
+				temp.number = s0.Top().number;
+				s0.Pop();
+				temp.number = s0.Top().number - temp.number;
+				s0.Pop();
+				temp.op = &#39;\0&#39;;
+				s0.Push(temp);
+				break;
+			case &#39;*&#39;:
+				temp.number = s0.Top().number;
+				s0.Pop();
+				temp.number *= s0.Top().number;
+				s0.Pop();
+				temp.op = &#39;\0&#39;;
+				s0.Push(temp);
+				break;
+			case &#39;/&#39;:
+				if (fabs(s0.Top().number) &lt; EPS)
+				{
+					cout &lt;&lt; &quot;除零错误！&quot; &lt;&lt; endl;
+					return;
+				}
+				temp.number = s0.Top().number;
+				s0.Pop();
+				temp.number = s0.Top().number / temp.number;
+				s0.Pop();
+				temp.op = &#39;\0&#39;;
+				s0.Push(temp);
+				break;
+			case &#39;%&#39;:
+				if ((int)s0.Top().number - s0.Top().number != 0)
+				{
+					cout &lt;&lt; &quot;取余运算操作数不是整型！&quot; &lt;&lt; endl;
+					return;
+				}
+				tempint = (int)s0.Top().number;
+				s0.Pop();
+				if ((int)s0.Top().number - s0.Top().number != 0)
+				{
+					cout &lt;&lt; &quot;取余运算操作数不是整型！&quot; &lt;&lt; endl;
+					return;
+				}
+				tempint = (int)s0.Top().number % tempint;
+				s0.Pop();
+				temp.number = tempint;
+				temp.op = &#39;\0&#39;;
+				s0.Push(temp);
+				break;
+			default:
+				break;
+			}
+		}
+		s4.Pop();
+	}
+	cout &lt;&lt; &quot;结果为：&quot; &lt;&lt; s0.Top().number &lt;&lt; endl;
+}
+
+int main()
+{
+	string infix;
+	zstack&lt;Elemt&gt; s0;
+	cout &lt;&lt; &quot;程序输入要求：&quot; &lt;&lt; endl;
+	cout &lt;&lt; &quot;1.负数不论在何位置，左右两边必须加括号&quot; &lt;&lt; endl;
+	cout &lt;&lt; &quot;2.退出请输入exit&quot; &lt;&lt; endl;
+	while (1)
+	{
+		cout &lt;&lt; &quot;请输入算数表达式：&quot;;
+		cin &gt;&gt; infix;
+		if (infix == &quot;exit&quot;) { cout &lt;&lt; endl &lt;&lt; &quot;已退出!&quot; &lt;&lt; endl;  break; }
+		infix.push_back(&#39;#&#39;);
+		s0 = trans(infix);
+		cout &lt;&lt; endl;
+		calculation(s0);
+		cout &lt;&lt; endl;
+	}
+	return 0;
+}
+</code></pre>
+                <p>&nbsp;</p>
+                <p>zstack.h</p>
+                <pre><code class='language-c++' lang='c++'>template &lt;class Type&gt;
+class zstack
+{
+private:
+    struct node {
+        Type data;
+        node* next;
+    };
+    node* stk;
+    typedef node* STACK;
+public:
+    zstack();
+    ~zstack();
+    bool Empty();
+    void Push(Type data);
+    void Pop();
+    Type Top();
+    int Size();
+    void MakeEmpty();
+};
+
+template &lt;class Type&gt;
+zstack&lt;Type&gt;::zstack() {
+    stk = new node;
+    stk-&gt;next = NULL;
+}
+
+template &lt;class Type&gt;
+zstack&lt;Type&gt;::~zstack() {
+    //MakeEmpty();
+}
+
+template &lt;class Type&gt;
+bool zstack&lt;Type&gt;::Empty()
+{
+    if (stk-&gt;next)
+        return false;
+    else
+        return true;
+}
+
+template &lt;class Type&gt;
+void zstack&lt;Type&gt;::Push(Type data)
+{
+    STACK s = new node;
+    s-&gt;data = data;
+    s-&gt;next = stk-&gt;next;
+    stk-&gt;next = s;
+}
+
+template &lt;class Type&gt;
+Type zstack&lt;Type&gt;::Top()
+{
+        return (stk-&gt;next-&gt;data);
+}
+
+template &lt;class Type&gt;
+void zstack&lt;Type&gt;::Pop()
+{
+    STACK s;
+    if (stk-&gt;next)
+    {
+        s = stk-&gt;next;
+        stk-&gt;next = s-&gt;next;
+        delete s;
+    }
+}
+
+template &lt;class Type&gt;
+int zstack&lt;Type&gt;::Size()
+{
+    int len = 0;
+    STACK current = stk-&gt;next;
+    while (current != NULL) {
+        len++;
+        current = current-&gt;next;
+    }
+    return len;
+}
+
+template &lt;class Type&gt;
+void zstack&lt;Type&gt;::MakeEmpty()
+{
+    STACK current = stk-&gt;next;
+    while (current != NULL) {
+        stk-&gt;next = current-&gt;next;
+        delete current;
+        current = NULL;
+        current = stk-&gt;next;
+    }
+}
+
+</code></pre>
+                <p>&nbsp;</p>
+                <p>更新时间：2020-07-21</p>
+            </section>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="inner">
+
+            <!-- Search -->
+            <section id="search" class="alt">
+                <form method="post" action="#">
+                    <input type="text" name="query" id="query" placeholder="Search" />
+                </form>
+            </section>
+
+            <!-- Menu -->
+            <nav id="menu">
+                <header class="major">
+                    <h2>Menu</h2>
+                </header>
+                <ul>
+                    <li><a href="../index.html">Homepage</a></li>
+                </ul>
+            </nav>
+
+            <!-- Section -->
+            <section>
+                <header class="major">
+                    <h2>Get in touch</h2>
+                </header>
+                <ul class="contact">
+                    <li class="icon solid fa-envelope"><a href="#">ziyuzhe123@outlook.com</a></li>
+                </ul>
+            </section>
+
+            <!-- Footer -->
+            <footer id="footer">
+                <p class="copyright">&copy; Untitled. All rights reserved. Demo Images: <a href="https://unsplash.com">Unsplash</a>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+            </footer>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="../assets/js/jquery.min.js"></script>
+<script src="../assets/js/browser.min.js"></script>
+<script src="../assets/js/breakpoints.min.js"></script>
+<script src="../assets/js/util.js"></script>
+<script src="../assets/js/main.js"></script>
+
+</body>
+</html>
