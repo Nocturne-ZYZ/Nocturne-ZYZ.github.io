@@ -2561,29 +2561,30 @@ input, select, textarea {
 		-webkit-flex-direction: column;
 		-ms-flex-direction: column;
 		flex-direction: column;
-		-moz-align-items: -moz-flex-end;
-		-webkit-align-items: -webkit-flex-end;
-		-ms-align-items: -ms-flex-end;
-		align-items: flex-end;
+		-moz-align-items: center; /* 修改此行为居中对齐 */
+		-webkit-align-items: center; /* 修改此行为居中对齐 */
+		-ms-align-items: center; /* 修改此行为居中对齐 */
+		align-items: center; /* 修改此行为居中对齐 */
 		-moz-justify-content: space-between;
 		-webkit-justify-content: space-between;
 		-ms-justify-content: space-between;
 		justify-content: space-between;
-		background-color: #1f1815;
-		background-attachment: scroll,								scroll;
-		background-image: url("images/overlay.png"), url("../../images/bg.jpg");
-		background-position: top left,							top left;
-		background-repeat: repeat,								no-repeat;
-		background-size: auto,								150%;
+		background-color: #22202e;
+		background-attachment: scroll, scroll;
+		/*background-image: url("images/overlay.png"), url("../../images/bg.png");*/
+		background-position: top left, top left;
+		background-repeat: repeat, no-repeat;
+		background-size: auto, 150%;
 		color: rgba(255, 255, 255, 0.5);
 		height: 100%;
 		left: 0;
 		padding: 8em 4em;
 		position: fixed;
-		text-align: right;
+    	text-align: center; /* 修改此行为居中对齐 */
 		top: 0;
-		width: 35%;
+		width: 26%;
 	}
+
 
 		#header > * {
 			-moz-flex-shrink: 0;
@@ -2618,7 +2619,7 @@ input, select, textarea {
 
 		#header .image.avatar {
 			margin: 0 0 1em 0;
-			width: 6.25em;
+			width: 9.25em;
 		}
 
 /* Footer */
@@ -2976,7 +2977,7 @@ input, select, textarea {
 					}
 
 				#header > .inner {
-					margin-bottom: 0;
+					F: 0;
 				}
 
 		/* Footer */
